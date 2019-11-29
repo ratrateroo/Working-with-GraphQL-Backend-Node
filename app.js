@@ -4,9 +4,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
+const graphqlHttp = require('express-graphql');
 
-const feedRoutes = require('./routes/feed');
-const authRoutes = require('./routes/auth');
+const graphqlSchema = require('./graphql/schema');
+const graphqlResolver = require('./graphql/resolvers');
 
 const { MongoDBUsername, MongoDBPassword } = require('./config/config');
 const DATABASE_NAME = 'messages';
@@ -53,8 +54,14 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/feed', feedRoutes);
-app.use('/auth', authRoutes);
+app.use(
+  '/graphql',
+  graphqlHttp({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver
+  })
+);
+
 
 app.use((error, req, res, next) => {
   console.log(error);
@@ -64,12 +71,9 @@ app.use((error, req, res, next) => {
   res.status(status).json({ message: message, data: data });
 });
 
-mongoose.connect(MONGODB_URI)
-    .then(result => {
-        const server = app.listen(8080);
-        const io = require('./socket').init(server);
-        io.on('connection', socket => {
-            console.log('Client connected');
-        });
-    })
-    .catch(err => console.log(err));
+mongoose
+  .connect(MONGODB_URI)
+  .then(result => {
+    app.listen(8080);
+  })
+  .catch(err => console.log(err));
