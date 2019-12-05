@@ -114,7 +114,7 @@ module.exports = {
             updatedAt: createdPost.updatedAt.toISOString()
         };
     },
-    posts: async function({page}, req) {
+    posts: async function({ page }, req) {
         if (!req.isAuth) {
             const error = new Error('Not authenticated!');
             error.code = 401;
@@ -126,18 +126,20 @@ module.exports = {
         const perPage = 2;
         const totalPosts = await Post.find().countDocuments();
         const posts = await Post.find()
-            .sort({createdAt: -1 })
+            .sort({ createdAt: -1 })
             .skip((page - 1) * perPage)
             .limit(perPage)
             .populate('creator');
-        return {posts: posts.map(p => {
-            return {
-                ...p._doc,
-                _id: p._id.toString(),
-                createdAt: p.createdAt.toISOString(),
-                updatedAt: p.updatedAt.toISOString()
-            };
-        }), totalPosts: totalPosts };
+        return {
+            posts: posts.map(p => {
+                return {
+                    ...p._doc,
+                    _id: p._id.toString(),
+                    createdAt: p.createdAt.toISOString(),
+                    updatedAt: p.updatedAt.toISOString()
+                };
+        }), 
+        totalPosts: totalPosts };
     },
     post: async function({ id }, req) {
         if (!req.isAuth) {
@@ -157,7 +159,6 @@ module.exports = {
             _id: post._id.toString(),
             createdAt: post.createdAt.toISOString(),
             updatedAt: post.updatedAt.toISOString()
-
         };
     },
     updatePost: async function({ id, postInput }, req) {
@@ -203,7 +204,7 @@ module.exports = {
         }
         const updatedPost = await post.save();
         return {
-            ...updatePost._doc,
+            ...updatedPost._doc,
             _id: updatedPost._id.toString(),
             createdAt: updatedPost.createdAt.toISOString(),
             updatedAt: updatedPost.updatedAt.toISOString() 
